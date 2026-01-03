@@ -16,3 +16,6 @@ Command-line arguments:  -os linux -ws gtk -arch x86_64 -data /home/krushna/CDAC
 
 !ENTRY org.eclipse.cdt.core 1 0 2026-01-03 19:54:53.232
 !MESSAGE Indexed '_CAN_Tx' (23 sources, 85 headers) in 2.4 sec: 6,429 declarations; 41,662 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.0042%)
+
+!ENTRY org.eclipse.cdt.core 1 0 2026-01-03 20:05:02.080
+!MESSAGE Indexed '_CAN_Rx' (21 sources, 83 headers) in 1.31 sec: 5,332 declarations; 28,821 references; 0 unresolved inclusions; 1 syntax errors; 2 unresolved names (0.0059%)
