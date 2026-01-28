@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
 	<item key="hasShownOverlayPopupBefore" value="true"/>
-	<item key="replaceBarOpen" value="false"/>
+	<item key="replaceBarOpen" value="true"/>
 	<list key="searchhistory">
+		<item value="TxMailBox"/>
 		<item value="HAL_CAN_Start"/>
 		<item value="hcan1"/>
+	</list>
+	<list key="replacehistory">
+		<item value="TxMailBox1"/>
 	</list>
 </section>
