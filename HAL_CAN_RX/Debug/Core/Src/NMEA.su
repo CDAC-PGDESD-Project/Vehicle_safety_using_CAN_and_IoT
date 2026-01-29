@@ -1,0 +1,2 @@
+../Core/Src/NMEA.c:7:8:NMEA_ConvertToDecimal	64	static
+../Core/Src/NMEA.c:23:6:NMEA_Parse	32	static

@@ -149,6 +149,7 @@ uint16_t Read_Temperature(void)
 	HAL_ADC_Stop(&hadc2);
 	return (uint16_t)temperature;
 }
+
 uint8_t Read_MQ2_Digital(void)
 {
     if(HAL_GPIO_ReadPin(MQ2_PORT, MQ2_PIN) == GPIO_PIN_SET)
@@ -195,7 +196,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_ADC2_Init();
   /* USER CODE BEGIN 2 */
-  HAL_CAN_Start(&hcan1);
+   HAL_CAN_Start(&hcan1);
    HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);
   /* USER CODE END 2 */
 

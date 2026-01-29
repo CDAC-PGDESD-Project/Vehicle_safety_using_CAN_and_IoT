@@ -1374,6 +1374,7 @@ uint16_t Read_Temperature(void)
  8000fa0:	40240000 	.word	0x40240000
 
 08000fa4 <Read_MQ2_Digital>:
+
 uint8_t Read_MQ2_Digital(void)
 {
  8000fa4:	b580      	push	{r7, lr}
@@ -1436,7 +1437,7 @@ int main(void)
   MX_ADC2_Init();
  8000fe2:	f000 f8c3 	bl	800116c <MX_ADC2_Init>
   /* USER CODE BEGIN 2 */
-  HAL_CAN_Start(&hcan1);
+   HAL_CAN_Start(&hcan1);
  8000fe6:	4826      	ldr	r0, [pc, #152]	@ (8001080 <main+0xbc>)
  8000fe8:	f001 fad8 	bl	800259c <HAL_CAN_Start>
    HAL_TIM_IC_Start_IT(&htim4, TIM_CHANNEL_1);

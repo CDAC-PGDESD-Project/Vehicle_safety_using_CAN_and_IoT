@@ -3,11 +3,13 @@
 	<item key="hasShownOverlayPopupBefore" value="true"/>
 	<item key="replaceBarOpen" value="true"/>
 	<list key="searchhistory">
+		<item value="tempreture"/>
 		<item value="TxMailBox"/>
 		<item value="HAL_CAN_Start"/>
 		<item value="hcan1"/>
 	</list>
 	<list key="replacehistory">
+		<item value="temperature"/>
 		<item value="TxMailBox1"/>
 	</list>
 </section>

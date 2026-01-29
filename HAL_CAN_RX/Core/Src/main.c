@@ -32,7 +32,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define GPS_BUF_SIZE 128
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -45,7 +45,9 @@ CAN_HandleTypeDef hcan1;
 
 TIM_HandleTypeDef htim1;
 
+UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 
@@ -57,6 +59,8 @@ static void MX_GPIO_Init(void);
 static void MX_CAN1_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_USART3_UART_Init(void);
+static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -69,14 +73,16 @@ uint8_t is_data_received;
 uint16_t distance;
 uint16_t speed;
 uint16_t gas;
-
+uint8_t gps_rx;
+char gps_buffer[GPS_BUF_SIZE];
+uint8_t gps_index = 0;
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
 	if(HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData) == HAL_OK)
 	{
 		// process the message
-        if (RxHeader.DLC == 5) {
+        if (RxHeader.DLC == 2) {
         	is_data_received = 1;
         }
 	}
@@ -92,7 +98,9 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	 char str[64];
+
+
+	 char str[256];
 	 char *str2 = "      >>>>>>>>>>>>>>>>>>>>>>>>> DATA <<<<<<<<<<<<<<<<<<<<<<<<<\r\n";
   /* USER CODE END 1 */
 
@@ -117,6 +125,8 @@ int main(void)
   MX_CAN1_Init();
   MX_TIM1_Init();
   MX_USART2_UART_Init();
+  MX_USART3_UART_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
     HAL_CAN_Start(&hcan1);
     HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
@@ -131,18 +141,45 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	   /* GPS Receive always */
+	  if (HAL_UART_Receive(&huart1, &gps_rx, 1, 10) == HAL_OK)
+	     {
+	         gps_buffer[gps_index++] = gps_rx;
+
+	         if (gps_rx == '\n' || gps_index >= GPS_BUF_SIZE-1)
+	         {
+	             gps_buffer[gps_index] = '\0';
+
+	             // Send GPS to ESP8266 (USART3)
+	             sprintf(str, "GPS,%s", gps_buffer);
+	             HAL_UART_Transmit(&huart3, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
+
+	             // Debug on PC
+	             HAL_UART_Transmit(&huart2, (uint8_t*)gps_buffer, gps_index, HAL_MAX_DELAY);
+
+	             gps_index = 0;
+	         }
+	     }
+
 	  if(is_data_received == 1)
 	 	 {
-	 		 strcpy(str,"---------------------------------------------------------- \r\n");
+	 		 strcpy(str,"------------------------------------------------------------- \r\n");
 	 		 HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
 	           distance = (uint16_t)RxData[0] << 8 | (uint16_t)RxData[1];
-	           uint16_t tempreture = (uint16_t)RxData[2] << 8 | (uint16_t)RxData[3];
+	           uint16_t temperature = (uint16_t)RxData[2] << 8 | (uint16_t)RxData[3];
 	           uint8_t gas = RxData[4];   // 0 = No gas, 1 = Gas detected
+
+
+
+	           sprintf(str, "CAN,%d,%d,%d\n", distance, temperature, gas);
+	           HAL_UART_Transmit(&huart3, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
+
 
 	           sprintf(str, " Distance : %d cm \r \n", distance);
 	       	  HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
 
-	       	  sprintf(str, " Temperature : %d degree \r \n", tempreture);
+
+	       	  sprintf(str, " Temperature : %d degree \r \n", temperature);
 	       	  HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
 
 	       	if(gas)
@@ -151,6 +188,18 @@ int main(void)
 	       	    sprintf(str, " Gas Status : Safe \r\n");
 
 	       	HAL_UART_Transmit(&huart2, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
+
+
+	          if(distance <20)
+	          {
+		          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
+	          }
+	          else
+	          {
+		          HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
+
+	          }
+
 
 
            HAL_Delay(500);
@@ -320,6 +369,39 @@ static void MX_TIM1_Init(void)
 }
 
 /**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 9600;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
+
+}
+
+/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -353,6 +435,39 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 115200;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -367,8 +482,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOE_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, GPIO_PIN_10|GPIO_PIN_11, GPIO_PIN_RESET);
