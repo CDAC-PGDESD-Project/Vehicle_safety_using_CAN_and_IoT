@@ -82,7 +82,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 	if(HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData) == HAL_OK)
 	{
 		// process the message
-        if (RxHeader.DLC == 2) {
+        if (RxHeader.DLC == 5) {
         	is_data_received = 1;
         }
 	}
@@ -206,7 +206,7 @@ int main(void)
 	          }
 	          else
 	          {
-	        	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13,GPIO_PIN_RESET);
+	        	  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13,GPIO_PIN_SET);
 	          }
 
 
@@ -215,6 +215,8 @@ int main(void)
 
   }
   /* USER CODE END 3 */
+}
+
 }
 
 /**
