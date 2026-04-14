@@ -1,10 +1,10 @@
-18:59:21 **** Incremental Build of configuration Debug for project HAL_CAN_RX ****
+10:25:38 **** Incremental Build of configuration Debug for project HAL_CAN_RX ****
 make -j8 all 
 arm-none-eabi-size  HAL_CAN_RX.elf 
    text	   data	    bss	    dec	    hex	filename
-  19160	     92	   2404	  21656	   5498	HAL_CAN_RX.elf
+  19192	     92	   2404	  21688	   54b8	HAL_CAN_RX.elf
 Finished building: default.size.stdout
  
 
-18:59:21 Build Finished. 0 errors, 0 warnings. (took 76ms)
+10:25:38 Build Finished. 0 errors, 0 warnings. (took 138ms)
 
